@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { google } from 'googleapis'
+import { drive_v3, google } from 'googleapis'
 
 /**
  * Create a post request to google apis to create a new document
@@ -14,6 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   oauth2Client.setCredentials({ access_token: token })
 
   const docs = google.docs({ version: 'v1', auth: oauth2Client })
+  const drive: drive_v3.Drive = google.drive({ version: 'v3', auth: oauth2Client })
 
   if (!token) {
     res.status(401).json({ message: 'Unauthorized' })
