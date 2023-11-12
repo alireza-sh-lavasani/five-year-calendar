@@ -4,6 +4,7 @@ import axios from 'axios'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { ISession, IUserInfo } from '@/common/interfaces'
+import NoteComponent from '@/components/noteComponent'
 
 export default function Home() {
   const { data } = useSession()
@@ -65,6 +66,9 @@ export default function Home() {
           <h1>Hi {userInfo?.given_name}</h1>
 
           <button onClick={createDocument}>Create Test Document</button>
+
+
+          <NoteComponent />
         </main>
       </>
     )

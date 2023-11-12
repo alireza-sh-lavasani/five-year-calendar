@@ -11,7 +11,6 @@ export interface ISession {
     image: string
   }
 }
-
 export interface IUserInfo {
   email: string
   family_name: string
@@ -21,4 +20,23 @@ export interface IUserInfo {
   name: string
   picture: string
   verified_email: boolean
+}
+
+export interface IEntryData {
+  _id: string
+  index: string
+  day: number
+  month: number
+  year: number
+  data?: {
+    html?: string
+    image?: string
+    audio?: string
+    video?: string
+  }
+}
+
+export interface INoteCardParams {
+  eachYearNote: IEntryData
+  fetchData: Function
 }
