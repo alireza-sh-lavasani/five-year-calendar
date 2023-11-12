@@ -1,33 +1,33 @@
-import axios from 'axios'
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { google } from 'googleapis'
 
 /**
- * create a post request to the microsoft graph api to create a doc
- * the token is passed in the header
+ * Create a post request to google apis to create a new document
+ * The token is passed in the header
+ * Use googleapis npm package to create the request instead of manually creating the request
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // fetch the token from req headers
-  const token = req.headers.token
+  const token: string = req.headers.token as string
+
+  const oauth2Client = new google.auth.OAuth2()
+  oauth2Client.setCredentials({ access_token: token })
+
+  const docs = google.docs({ version: 'v1', auth: oauth2Client })
 
   if (!token) {
     res.status(401).json({ message: 'Unauthorized' })
     return
   }
 
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
-  }
-
   try {
-    const response = await axios.post(
-      'https://graph.microsoft.com/v1.0/drive/root/children',
-      {
-        name: 'New Document.docx',
-        file: {},
+    const response = await docs.documents.create({
+      requestBody: {
+        title: `Five Year Calendar ${
+          new Date().getMonth() + 1
+        }-${new Date().getDate()}-${new Date().getFullYear()} | ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`,
       },
-      { headers }
-    )
+    })
 
     res.status(200).json({ message: 'Document created successfully', data: response.data })
   } catch (error) {

@@ -3,41 +3,14 @@ import { useSession, signIn, signOut } from 'next-auth/react'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-
-interface ISession {
-  accessToken: string
-  expires: string
-  expires_in: string
-  id_token: string
-  refresh_token: string
-  token_type: string
-  user: {
-    name: string
-    email: string
-    image: string
-  }
-}
+import { ISession, IUserInfo } from '@/common/interfaces'
 
 export default function Home() {
   const { data } = useSession()
   const session = data as ISession
 
-  if (session) console.log(session.accessToken)
-
   // Create states to store user info and photo
-  const [userInfo, setUserInfo] = useState({ givenName: ' ' })
-  const [userPhoto, setUserPhoto] = useState(null)
-
-  useEffect(() => {
-    const getUserInfo = async () => {
-      const response = await axios.get('https://graph.microsoft.com/v1.0/me', {
-        headers: { Authorization: `Bearer ${session.accessToken}` },
-      })
-      console.log(response.data.data)
-    }
-
-    if (session) getUserInfo()
-  }, [session])
+  const [userInfo, setUserInfo] = useState<IUserInfo>()
 
   /**
    * Fetch user info and photo when session is available
@@ -50,17 +23,22 @@ export default function Home() {
       setUserInfo(response.data.data)
     }
 
-    const getUserPhoto = async () => {
-      // const response = await axios.get('/api/me/photo', { headers: { token: session?.accessToken } })
-      // setUserPhoto(response.data.data)
-    }
-
     if (session) {
       getUserInfo()
-      getUserPhoto()
     }
   }, [session])
 
+  /**
+   * Create a new document
+   */
+  const createDocument = async () => {
+    const response = await axios.post('/api/create-doc', {}, { headers: { token: session?.accessToken } })
+    console.log(response.data)
+  }
+
+  /**
+   * If session is available, display user info and photo
+   */
   if (session)
     return (
       <>
@@ -80,14 +58,19 @@ export default function Home() {
             Sign Out
           </button>
 
-          {/* preview user photo from userphoto.data if the state was not null */}
-          {/* {userPhoto && <img src={`data:image/png;base64,${userPhoto}`} alt='profile image' />} */}
+          {/* preview user photo from userInfo.picture if the state was not null */}
+          {userInfo?.picture && <Image src={userInfo.picture} width={100} height={100} alt='profile photo' />}
 
           {/* display user info from userinfo.data if the state was not null */}
-          <h1>Hi {userInfo?.givenName}</h1>
+          <h1>Hi {userInfo?.given_name}</h1>
+
+          <button onClick={createDocument}>Create Test Document</button>
         </main>
       </>
     )
 
-  return <button onClick={() => signIn('azure-ad')}>Sign In</button>
+  /**
+   * If session is not available, display sign in button
+   */
+  return <button onClick={() => signIn('google')}>Sign In</button>
 }
